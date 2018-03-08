@@ -1,38 +1,58 @@
-'use strict';
+var gulp        = require('gulp');
+var csso        = require('gulp-csso');
+var babel       = require('gulp-babel');
+var pug         = require('gulp-pug');
+var sass        = require('gulp-sass');
+var browserify  = require('browserify');
+var gulpif      = require('gulp-if');
+var uglify      = require('gulp-uglify');
 
-global.isProd = false;
+gulp.task('sass', () => {
+    return (gulp.src('views/style').pipe(sass()).pipe(csso()).pipe(gulp.dest('public/css')));
+});
 
-import './gulp';
+gulp.task('react', () => {
+    return
+    browserify({entries: 'app/main.js', debug: true})
+        .transform('babelify', {'presets': ['es2015', 'react']})
+        .bundle()
+        .pipe(source('bundle.js'))
+        .pipe(buffer())
+        .pipe(sourcemaps.init({loadMaps: true}))
+        .pipe(gulpif(argv.production, uglify()))
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest('public/js'));
+});
 
-/*
-    --TOP LEVEL FUNCTION--
-    gulp.task - Define tasks
-    gulp.src - Point to files to use
-    guld.dest - Point to folder to output
-    gulp.watch - Watch files and folders for changes
-*/
-// gulp.task('message', function(){
-//     return console.log('Gulp is running.');
-// });
-// gulp.task('pug', ()=>{
-//     gulp.src('src/templates/*.pug')
-//         .pipe(pug())
-//         .pipe(gulp.dest('dist/html'))
-// });
-// gulp.task('html', ()=>{
-//     gulp.src('src/templates/*.html')
-//         .pipe(gulp.dest('dist/html'))
-// });
-// gulp.task('css', ()=>{
-//     gulp.src('src/css/*.scss')
-//         .pipe(sass())
-//         .pipe(minifyCSS())
-//         .pipe(gulp.dest('dist/css'))
-// });
-// gulp.task('js', ()=>{
-//     gulp.src('src/js/*.js')
-//         .pipe(uglify())
-//         .pipe(concat('main.js'))
-//         .pipe(gulp.dest('dist/js'))
-// });
-// gulp.task('default', ['html', 'pug', 'css', 'js']);
+// Watch for JS changes, then rebundle.
+gulp.task('watchify', ()=>{
+    var bundler = watchify(browserify({entries:'app/main.js', debug:true}, watchift.args));
+    bundler.transform('babelify', {presets:['env', 'react']});
+    bundler.on('update',  rebundle);
+    return rebundle();
+    function rebundle(){
+        var start = Date.now();
+        return (
+            bundler.bundle()
+            .on('error', function(err){
+                gulpUtil.log(gulpUtil.colors.red(err.toString()));
+            })
+            .on('end', function(){
+                gulpUtil.log(gulpUtil.colors.green('Finished rebundling in', (Date.now()-start)+'ms'));
+            })
+            .pipe(source('bundle.js'))
+            .pipe(buffer())
+            .pipe(sourcemaps.init({loadMaps: true}))
+            .pipe(sourcemaps.write('.'))
+            .pipe(gulp.dest('public/js'))
+        )
+    }
+});
+
+// Watch for css changes then run the 'sass' task defined above.
+gulp.task('watch', function(){
+    gulp.watch('public/css/**.scss', ['sass']);
+});
+
+gulp.task('build', ['sass', 'react']);
+gulp.task('default', ['build', 'watch', 'watchify']);
