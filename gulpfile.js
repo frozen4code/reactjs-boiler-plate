@@ -1,12 +1,19 @@
-var gulp        = require('gulp');
-var csso        = require('gulp-csso');
-var babel       = require('gulp-babel');
-var pug         = require('gulp-pug');
-var sass        = require('gulp-sass');
-var browserify  = require('browserify');
-var watchify    = require('watchify');
-var gulpif      = require('gulp-if');
-var uglify      = require('gulp-uglify');
+const gulp        = require('gulp'),
+    csso        = require('gulp-csso'),
+    babel       = require('gulp-babel'),
+    pug         = require('gulp-pug'),
+    sass        = require('gulp-sass'),
+    browserify  = require('browserify'),
+    watchify    = require('watchify'),
+    babelify    = require('babelify'),
+    gulpif      = require('gulp-if'),
+    gulpUtil    = require('gulp-util'),
+    uglify      = require('gulp-uglify'),
+    plumber     = require('gulp-plumber'),
+    buffer      = require('vinyl-buffer'),
+    argv        = require('yargs').argv,
+    source      = require('vinyl-source-stream'),
+    autoprefixer= require('gulp-autoprefixer');
 
 gulp.task('sass', () => {
     return (gulp.src('views/style').pipe(sass()).pipe(csso()).pipe(gulp.dest('public/css')));
