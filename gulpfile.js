@@ -4,6 +4,7 @@ var babel       = require('gulp-babel');
 var pug         = require('gulp-pug');
 var sass        = require('gulp-sass');
 var browserify  = require('browserify');
+var watchify    = require('watchify');
 var gulpif      = require('gulp-if');
 var uglify      = require('gulp-uglify');
 
